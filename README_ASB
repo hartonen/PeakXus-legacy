@@ -1,0 +1,88 @@
+This document contains instructions to Allele Specific Binding (ASB) analysis from ChIP-exo/Nexus experiments.
+The analysis is described in publication: "Hartonen T, Sahu B, Dave K, Kivioja T and Taipale J, PeakXus: Transcription Factor Binding Site Discovery From ChIP-Nexus and ChIP-exo Experiments, in review"
+
+The analysis consists of two steps:
+
+1) Computing the set of SNP's that overlap with a called peak
+2) Analyzing the effects of SNP's to peaks that contain the TF-specific high-affinity recognition sequence
+
+Output of step 1 is used as an input for step 2.
+
+###############################################################
+#1) Computing the set of SNP's that overlap with a called peak#
+###############################################################
+
+Input files needed for the analysis:
+
+1) List of called peaks in igv-format (file called all_transition_points.igv from PeakXus output)
+2) The bam-file(s) used as an input for peak calling
+3) File containing the UMI-labels used in the experiment
+4) The vcf-file(s) containing the SNP's of interest
+
+In the following usage examples the input file locations are assumed to be:
+
+1) out/all_transition_points.igv
+2) exp_path/exp.bam
+3) exp_path/UMIs.txt
+4) exp_path/SNPS.vcf
+
+Help and all possible input parameters for stage 1 of ASB analysis can be seen by typing
+
+> testASB.py -h
+
+This stage of the analysis is time consuming if the number of variants is high. Thus if possible, it is advised that the input SNP-file is split such that SNP's of each chromosome are in separate files. Then the analysis can be carried out in parallel for each chromosome using the "-n nproc" option of testASB.py, where nproc is the number of parallel processes used. Analysis presented in the PeakXus-paper with all 1000 Genomes SNP's took approximately 24 hours to finish with -n 24 and ~65 000 peaks. In the following simplified examples only one input vcf-file is given.
+
+Example 1: assuming there are 65000 peaks reported by PeakXus
+-------------------------------------------------------------
+
+> testASB.py out/all_transition_points.igv exp_path/exp.bam exp_path/UMIs.txt exp_path/SNPS.vcf -N 65000 > out/peakOverlapSNP.tsv
+
+Notice that output is by default written to standard output! Output is a simple tab-delimited file.
+
+############################################################################################################
+#2) Analyzing the effects of SNP's to peaks that contain the TF-specific high-affinity recognition sequence#
+############################################################################################################
+
+Input files needed for the analysis:
+
+1) output from testASB.py
+2) PWM-matrix for the binding motif of interest
+3) A gff-formatted file containing the hits of the PWM to the reference genome
+4) Reference genome file in fasta-format
+5) genomig Allele Ratios (gAR) computed from WGS-reads (this is optional but used in the analysis in PeakXus paper)
+
+In the following usage examples the input file locations are assumed to be:
+
+1) out/peakOverlapSNP.tsv
+2) motif_path/TF.pwm
+3) motif_path/matrix_hits.gff
+4) ref_genome_path/wg.fasta
+5) exp_path/gAR.tsv
+
+Help and all possible inpit parameters for stage 2 of ASB analysis can be seen by typing
+
+> SNPEffectToMotif.py -h
+
+Example 1: Simple analysis without gAR's using binomial test
+------------------------------------------------------------
+
+> SNPEffectToMotif.py out/peakOverlapSNP.tsv motif_path/TF.pwm motif_path/matrix_hits.gff ref_genome_path/wg.fasta out/ --test 1 -t 0.01
+
+here p-value threshold is 0.01.
+
+Example 2: Analysis with gAR's and "winflat"-test (as done in the PeakXus paper)
+--------------------------------------------------------------------------------
+
+> SNPEffectToMotif.py out/peakOverlapSNP.tsv motif_path/TF.pwm motif_path/matrix_hits.gff ref_genome_path/wg.fasta out/ --test 0 -t 0.01 -AR exp_path/gAR.tsv
+
+Format of the file containing the gAAR's must be following (columns separated by tabs):
+
+chromosome	SNP_coordinate	SNP_id	hits_to_reference_allele_in_wgs	_hits_to_alternate_allele_in_wgs
+
+Stage 2 of the ASB analysis produces multiple scatter plots as an output:
+
+i) ASB p-value vs. affinity change in the motif induced by SNP
+ii) p-value vs. hit count to the more frequent allele in the ChIP experiment
+ii) reference allele ratio vs. affinity change (these are shown in the paper for CTCF ChIP-Nexus)
+iv) reference allele ratio vs. p-value
+

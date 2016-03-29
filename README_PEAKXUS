@@ -1,0 +1,58 @@
+This document contains instructions to peak calling with PeakXus software from ChIP-exo/Nexus experiments.
+The analysis is described in publication: "Hartonen T, Sahu B, Dave K, Kivioja T and Taipale J, PeakXus: Transcription Factor Binding Site Discovery From ChIP-Nexus and ChIP-exo Experiments, in review"
+
+    ----------
+    |OVERVIEW|
+    ----------
+
+    This script performs the following functionality if a fastq-file is given as an input:
+    
+      1) Trimming adapters from ends of reads using Cutadapt-tool.
+      2) Aligning the reads in the input fastq-file to a specified reference genome using bwa aln-algorithm.
+      3) Peak calling using PeakXus.
+      4-6) Plotting different kind of figures for graphical inspection of the peak calling results.
+    
+    Steps 1-2 are skipped if the input is already in bam-format. Steps 4-6 are optional.
+    Below is a detailed description of all the possible input parameters for different stages of the pipeline.
+
+    ----------------
+    |USAGE EXAMPLES|
+    ----------------
+
+    Majority of the optional input parameter values seldom need tweaking. Below are listed some example
+    calls of the pipeline for conducting different tasks. Input file locations are assumed to be:
+
+    ref_genome_path/genome.idx = reference genome index
+    ref_genome_path/wg.fasta   = reference genome in fasta-format
+    exp_path/exp.fastq         = reads from ChIP-Nexus experiment in fastq-format
+    exp_path/exp.bam           = aligned reads from ChIP-Nexus experiment in bam-format
+    exp_path/UMIs.txt          = UMI-labels used in the experiment
+    exp_path/chroms.txt        = chromosome names in the ChIP-Nexus experiment
+    motif_path/matrix_hits.gff = hits of the corresponding TF-pwm to the used reference genome in gff-format
+
+      i) PEAK CALLING ONLY FROM A BAM-FILE
+      --------------------------------------
+
+        without UMIs:
+        PeakXus.py exp_path/exp.bam out/ exp_path/chroms.txt
+
+        with UMIs:
+        PeakXus.py exp_path/exp.bam out/ exp_path/chroms.txt --UMIs exp_path/UMIs.txt
+
+      ii) PEAK CALLING ONLY FROM A FASTQ-FILE
+      ---------------------------------------
+
+        aligning with 8 cores
+        PeakXus.py exp_path/exp.fastq out/ exp_path/chroms.txt --genome2 ref_genome_path/wg.fasta --t2 8
+
+        UMIs of length 4 and 5 used
+        PeakXus.py exp_path/exp.fastq out/ exp_path/chroms.txt --genome2 ref_genome_path/wg.fasta --UMIs exp_path/UMIs.txt --B2 4 5
+
+      iii) PEAK CALLING FROM A BAM-FILE, PLOTTING GRAPHICAL RESULTS
+      -------------------------------------------------------------
+
+        assuming the binding motif width is 8 bp's
+        PeakXus.py exp_path/exp.bam out/ exp_path/chroms.txt --matrixhits motif_path/matrix_hits.gff -ml4 8 -ms4 -4
+
+ A detailed list of input arguments accepted by PeakXus can be seen by typing
+ > PeakXus.py -h

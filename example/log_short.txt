@@ -1,0 +1,34 @@
+
+
+****************
+*Parameters are*
+****************
+* minimum distance between peaks:   mindist  =30
+* window width:                     w        = 5
+* lower limit of 5' end of + reads: l_limit  = 60
+* upper limit of 5' end of - reads: u_limit  = 5
+* background threshold:             b        = 0.05
+* width of sliding window:          s        = 1
+* number of CPU's used:             nproc    = 1
+
+
+Input files: ['/mnt/DataDisk1/data/CTCF_example/bams/CTCF_replicate1.sorted_chr1.bam']
+Output directory: /mnt/DataDisk1/exoNexus_test/
+
+
+* Verbosity is on.
+* Timing is on.
+* Not using UMIs.
+
+
+Testing that input files exist...done!
+Processing /mnt/DataDisk1/data/CTCF_example/bams/CTCF_replicate1.sorted_chr1.bam
+Reading in data...done!
+Reading data took 12.9938929081 s
+**************************************
+CHROMOSOME: chr1
+Creating peak regions...done!
+Creating peak regions took 161.591830015 s
+Calculating background...done!
+Estimating background took 69.7843141556 s
+Total duration 244.370037079 s
